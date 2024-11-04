@@ -21,21 +21,8 @@ fusion_distance = a / 27  # distance below which stars will merge
 R = 500 * 3.086 * 10 ** (19)  # distance of observation 500Mpc
 α = 4.1
 β = 4
-γ = 1 
+γ = 1
 
-#####EM INTERACTION CONSTANTS
-
-B = 10e11
-magnetar_radius = 20
-mu_naught = 4e-7 * np.pi
-magnetic_moment = (B * magnetar_radius ** 3) / (2 * mu_naught)
-magnetar_dist = 7.48e7
-
-
-def dipole_interaction():
-    #####Using simplified dipole equation because both magnetar moments are along the same axis
-    dipole_force_simplified = (3 * mu_naught) / (4 * np.pi * magnetar_dist ** 4) * (magnetic_moment ** 2)
-    return dipole_force_simplified
 
 def v(a):
     return 2 * np.pi * a / T
@@ -59,10 +46,6 @@ def equation(r, t):
     R1 = np.sqrt(x1 ** 2 + y1 ** 2)
     R2 = np.sqrt(x2 ** 2 + y2 ** 2)
 
-######MODIFY THIS USING THE CALCULATED DIPOLE INTERACTION
-
-
-#####This is objects accelerating towards each other in spacetime
     # Gravitational forces
     dvx1dt = -G * m2 * x1 / (R1 ** 3 + 1e-10)  # Avoid division by zero
     dvy1dt = -G * m2 * y1 / (R1 ** 3 + 1e-10)
@@ -70,8 +53,6 @@ def equation(r, t):
     dvx2dt = -G * m1 * x2 / (R2 ** 3 + 1e-10)
     dvy2dt = -G * m1 * y2 / (R2 ** 3 + 1e-10)
 
-
-#######This is friction slowing the objects thru spacetime
     # Friction forces
     v_rel = np.array([vx1 - vx2, vy1 - vy2])
     dist = distance(x1, y1, x2, y2)
@@ -162,7 +143,6 @@ ax2.spines["left"].set_color("white")
 # Adjust the size of the plots
 ax1.set_position([0.1, 0.35, 0.8, 0.63])  # Increase the size of the upper plot
 ax2.set_position([0.1, 0.07, 0.8, 0.20])  # Decrease the size of the lower plot
-
 
 # Animation
 ani = FuncAnimation(fig, update, frames=len(t_values), interval=1, blit=True)
