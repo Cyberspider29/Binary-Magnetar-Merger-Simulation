@@ -1,7 +1,6 @@
 import numpy as np
-from scipy.integrate import odeint
+from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 
 # Constants
 G = 6.67430e-11  # Gravitational constant
@@ -21,20 +20,19 @@ fusion_distance = a / 27  # distance below which stars will merge
 R = 500 * 3.086 * 10 ** (19)  # distance of observation 500Mpc
 α = 4.1
 β = 4
-γ = 1 
+γ = 1
 
-#####EM INTERACTION CONSTANTS
 
 B = 10e11
 magnetar_radius = 20
 mu_naught = 4e-7 * np.pi
 magnetic_moment = (B * magnetar_radius ** 3) / (2 * mu_naught)
-magnetar_dist = 7.48 * 10 ** 8
+reduced_mass = (m1 ** 2) / (m1 + m2)
 
-def dipole_interaction():
-    #####Using simplified dipole equation because both magnetar moments are along the same axis
-    dipole_force_simplified = (3 * mu_naught) / (4 * np.pi * magnetar_dist ** 4) * (magnetic_moment ** 2)
-    return dipole_force_simplified
+# Dipole interaction function
+def dipole_interaction(dist):
+    return ((6 * mu_naught) / (4 * np.pi * dist ** 4)) * (magnetic_moment ** 2)
+
 
 def v(a):
     return 2 * np.pi * a / T
@@ -49,19 +47,15 @@ def distance(x1, y1, x2, y2):
 
 
 def friction_coefficient(r, t):
-    return β / ((t+γ*tm)**(3/5) * np.exp(α * r / a))  # Avoid division by zero
+    return β / ((t + γ * tm) ** (3 / 5) * np.exp(α * r / a))  # Avoid division by zero
 
 
-def equation(r, t):
+def equation(t, r):
     x1, y1, vx1, vy1, x2, y2, vx2, vy2 = r
 
     R1 = np.sqrt(x1 ** 2 + y1 ** 2)
     R2 = np.sqrt(x2 ** 2 + y2 ** 2)
 
-######MODIFY THIS USING THE CALCULATED DIPOLE INTERACTION
-
-
-#####This is objects accelerating towards each other in spacetime
     # Gravitational forces
     dvx1dt = -G * m2 * x1 / (R1 ** 3 + 1e-10)  # Avoid division by zero
     dvy1dt = -G * m2 * y1 / (R1 ** 3 + 1e-10)
@@ -69,21 +63,19 @@ def equation(r, t):
     dvx2dt = -G * m1 * x2 / (R2 ** 3 + 1e-10)
     dvy2dt = -G * m1 * y2 / (R2 ** 3 + 1e-10)
 
-
-#######This is friction slowing the objects thru spacetime
     # Friction forces
     v_rel = np.array([vx1 - vx2, vy1 - vy2])
     dist = distance(x1, y1, x2, y2)
     k = friction_coefficient(dist, tm)
-    dvx1dt -= (k * v_rel[0] + dipole_interaction())
-    dvy1dt -= (k * v_rel[1] + dipole_interaction())
-    dvx2dt += (k * v_rel[0] + dipole_interaction())
-    dvy2dt += (k * v_rel[1] + dipole_interaction())
+    dvx1dt -= dipole_interaction(dist) / 10e5
+    dvy1dt -= dipole_interaction(dist) / 10e5
+    dvx2dt += dipole_interaction(dist) / 10e5
+    dvy2dt += dipole_interaction(dist) / 10e5
 
     return [vx1, vy1, dvx1dt, dvy1dt, vx2, vy2, dvx2dt, dvy2dt]
 
 
-def h(t):
+def h(t, distances):
     f_GW = [np.sqrt(G * M / (distances[i] + 1e-10) ** 3) / (np.pi) for i, dist in enumerate(distances)]
     h0 = [
         4 * G * Mc / (c ** 2 * R) * (G / c ** 3 * np.pi * f_GW[i] * Mc) ** (2 / 3) for i, dist in enumerate(distances)
@@ -100,27 +92,26 @@ def h(t):
 
 initial_conditions = [a * (1 - e) * m1 / M, 0, 0, v(a), -a * (1 - e) * m2 / M, 0, 0, -v(a)]
 
-t_values = np.arange(0.0, tm/2, 0.01)  # One orbital period
+# Integrate using solve_ivp with adaptive step sizing
+sol = solve_ivp(equation, [0, tm / 2], initial_conditions, method='RK45', t_eval=np.arange(0.0, tm / 2, 0.01))
+solution = sol.y.T
 
-solution = odeint(equation, initial_conditions, t_values)
-
-# Calcul de la distance entre les deux étoiles pour chaque instant
-distances = [distance(solution[i, 0], solution[i, 1], solution[i, 4], solution[i, 5]) for i in range(len(t_values))]
+# Use sol.t (the time points actually returned by solve_ivp) instead of t_values
+distances = [distance(solution[i, 0], solution[i, 1], solution[i, 4], solution[i, 5]) for i in range(len(sol.t))]
 
 # Create the figure and axes
 fig = plt.figure(figsize=(10, 12))
 fig.set_facecolor("black")
 gs = fig.add_gridspec(2, hspace=0.20)
 
-# Upper plot for animation
-
-# Lower plot for signal
+# Plot the strain (gravitational wave signal)
 ax2 = fig.add_subplot(gs[0])
-ax2.set_xlim(0, tm/2)
-ax2.set_ylim(min(h(t_values)), max(h(t_values)))
+ax2.set_xlim(0, tm / 2)
+ax2.set_ylim(min(h(sol.t, distances)), max(h(sol.t, distances)))
 ax2.set_facecolor("black")
 
-ax2.plot(t_values, h(t_values), color="white")
+# Plotting the gravitational wave strain over time
+ax2.plot(sol.t, h(sol.t, distances), color="white")
 ax2.set_title("Strain over time", color="white")
 ax2.set_xlabel("Time", color="white")
 ax2.set_ylabel("Strain", color="white")
@@ -131,9 +122,5 @@ ax2.tick_params(axis="y", colors="white")
 ax2.spines["bottom"].set_color("white")
 ax2.spines["left"].set_color("white")
 
-# Adjust the size of the plots
-ax2.set_position([0.1, 0.35, 0.8, 0.63])  # Decrease the size of the lower plot
-
-
-# Animation
+# Show plot
 plt.show()
