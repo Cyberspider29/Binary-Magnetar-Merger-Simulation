@@ -67,11 +67,12 @@ def equation(t, r):
     v_rel = np.array([vx1 - vx2, vy1 - vy2])
     dist = distance(x1, y1, x2, y2)
     k = friction_coefficient(dist, tm)
-    
-    dvx1dt -= dipole_interaction(dist) / 10e5
-    dvy1dt -= dipole_interaction(dist) / 10e5
-    dvx2dt += dipole_interaction(dist) / 10e5
-    dvy2dt += dipole_interaction(dist) / 10e5
+
+    dvx1dt -= (k * v_rel[0] + (dipole_interaction(dist) * 1.26) / (10 ** 4.6))
+    dvy1dt -= (k * v_rel[1] + (dipole_interaction(dist) * 1.26) / (10 ** 4.6))
+    dvx2dt += (k * v_rel[0] + (dipole_interaction(dist) * 1.26) / (10 ** 4.6))
+    dvy2dt += (k * v_rel[1] + (dipole_interaction(dist) * 1.26) / (10 ** 4.6))
+
 
     return [vx1, vy1, dvx1dt, dvy1dt, vx2, vy2, dvx2dt, dvy2dt]
 
@@ -108,6 +109,7 @@ gs = fig.add_gridspec(2, hspace=0.20)
 # Plot the strain (gravitational wave signal)
 ax2 = fig.add_subplot(gs[0])
 ax2.set_xlim(0, tm / 2)
+
 ax2.set_ylim(min(h(sol.t, distances)), max(h(sol.t, distances)))
 ax2.set_facecolor("black")
 
