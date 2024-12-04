@@ -67,12 +67,12 @@ def equation(t, r):
 
     #Modify Magnetar 1's Differential Variables
     n = 10e5
-    dvx1dt -= k * v_rel[0] + dipole_interaction(dist) / n
-    dvy1dt -= k * v_rel[1] + dipole_interaction(dist) / n
+    dvx1dt -= dipole_interaction(dist) / n
+    dvy1dt -= dipole_interaction(dist) / n
 
     #Modify Magnetar 2's Differential Variables
-    dvx2dt += k * v_rel[0] + dipole_interaction(dist) / n
-    dvy2dt += k * v_rel[1] + dipole_interaction(dist) / n
+    dvx2dt += dipole_interaction(dist) / n
+    dvy2dt += dipole_interaction(dist) / n
 
 
     return [vx1, vy1, dvx1dt, dvy1dt, vx2, vy2, dvx2dt, dvy2dt]

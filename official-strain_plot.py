@@ -68,10 +68,10 @@ def equation(t, r):
     dist = distance(x1, y1, x2, y2)
     k = friction_coefficient(dist, tm)
     
-    dvx1dt -= dipole_interaction(dist) / 10e5
-    dvy1dt -= dipole_interaction(dist) / 10e5
-    dvx2dt += dipole_interaction(dist) / 10e5
-    dvy2dt += dipole_interaction(dist) / 10e5
+    dvx1dt -= dipole_interaction(dist) / 10e2
+    dvy1dt -= dipole_interaction(dist) / 10e2
+    dvx2dt += dipole_interaction(dist) / 10e2
+    dvy2dt += dipole_interaction(dist) / 10e2
 
     return [vx1, vy1, dvx1dt, dvy1dt, vx2, vy2, dvx2dt, dvy2dt]
 

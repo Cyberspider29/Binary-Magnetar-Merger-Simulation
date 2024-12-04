@@ -3,6 +3,8 @@ from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+###########WIP BASEFILE NOT FINAL
+
 # Constants
 G = 6.67430e-11  # Gravitational constant
 c = 299792458
