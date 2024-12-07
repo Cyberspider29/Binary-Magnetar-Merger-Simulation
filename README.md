@@ -1,3 +1,5 @@
+2D-Binary-Magnetar-Simulation
+
 This code simulates the 2D merger of two hypercharged binary neutron stars (magnetars) and the resulting gravitational wave signal:
 The code and derivation for the gravitational interaction can be found via HugoGW's repository (https://github.com/HugoGW/Star-merging-and-gravitational-wave-signal).
 However, I have made some major changes regarding the code since I needed to calculate the orbital eccentricity for each frame. Thus, in this code I have replaced the `odeint` differential equation solver with `solve_ivp`.
