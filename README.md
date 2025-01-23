@@ -19,5 +19,5 @@ Next, since the program needs to calculate the repulsive force between the two m
 We obtain the following repulsive force equation to be used in our calculations: $F_r = \frac{3\mu_0 \cdot 2\mu_1\mu_2}{4\pi \cdot r^4}$
 
 To calculate the orbital eccentricity we use Kepler's 3rd Law to obtain the following: $e = \frac{r_a - r_p}{r_a + r_p}$
-The `solve_ivp` integrator will allow me to get the maximum and minimum distances for each magnetar at each frame, allowing me to return the eccentricity for each frame as well.
+The `solve_ivp` integrator will allow me to get the maximum and minimum distances for each magnetar at each frame, allowing us to return the eccentricity for each frame as well. This will allow us to easily judge the effect of the orbital deviations due to the interactions of the magnetic fields.
 
