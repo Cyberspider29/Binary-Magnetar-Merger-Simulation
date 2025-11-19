@@ -24,15 +24,15 @@ R = 500 * 3.086 * 10 ** 19  # distance of observation 500 Mpc
 γ = 1
 
 # EM Interaction Constants
-B = 10e11
+B = 2e27
 magnetar_radius = 20
 mu_naught = 4e-7 * np.pi
-magnetic_moment = (B * magnetar_radius ** 3) / (2 * mu_naught)
+magnetic_moment = 0.5 * B * (magnetar_radius ** 3)
 reduced_mass = (m1 ** 2) / (m1 + m2)
 
 # Dipole interaction function
 def dipole_interaction(dist):
-    return ((6 * mu_naught) / (4 * np.pi * dist ** 4)) * (magnetic_moment ** 2)
+    return (3 * mu_naught * (magnetic_moment**2)) / (2 * np.pi * dist**4)
 
 # Velocity function
 def v(a):
@@ -59,21 +59,15 @@ def equation(t, r):
     dvx2dt = -G * m1 * x2 / (R2 ** 3 + 1e-10)
     dvy2dt = -G * m1 * y2 / (R2 ** 3 + 1e-10)
 
-
     # Friction forces and magnetic interaction
     v_rel = np.array([vx1 - vx2, vy1 - vy2])
     dist = distance(x1, y1, x2, y2)
     k = friction_coefficient(dist, tm)
 
-    #Modify Magnetar 1's Differential Variables
-    n = 10e5
-    dvx1dt -= k * v_rel[0] + dipole_interaction(dist) / n
-    dvy1dt -= k * v_rel[1] + dipole_interaction(dist) / n
-
-    #Modify Magnetar 2's Differential Variables
-    dvx2dt += k * v_rel[0] + dipole_interaction(dist) / n
-    dvy2dt += k * v_rel[1] + dipole_interaction(dist) / n
-
+    dvx1dt -= (k * v_rel[0] + (dipole_interaction(dist) / m1))
+    dvy1dt -= (k * v_rel[1] + (dipole_interaction(dist) / m1))
+    dvx2dt += (k * v_rel[0] + (dipole_interaction(dist) / m2))
+    dvy2dt += (k * v_rel[1] + (dipole_interaction(dist) / m2))
 
     return [vx1, vy1, dvx1dt, dvy1dt, vx2, vy2, dvx2dt, dvy2dt]
 
@@ -92,6 +86,7 @@ separation_distances = np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 # Animation function
 def update(frame):
     dist = separation_distances[frame]
+    
     r_a = np.max(separation_distances[:frame+1])  # current maximum separation distance 
     r_p = np.min(separation_distances[:frame+1])  # current minimum separation distance
 

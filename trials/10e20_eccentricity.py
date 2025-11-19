@@ -27,12 +27,12 @@ R = 500 * 3.086 * 10 ** 19  # distance of observation 500 Mpc
 B = 10e11
 magnetar_radius = 20
 mu_naught = 4e-7 * np.pi
-magnetic_moment = (B * magnetar_radius ** 3) / (2 * mu_naught)
+magnetic_moment = 0.5 * B * (magnetar_radius ** 3)
 reduced_mass = (m1 ** 2) / (m1 + m2)
 
 # Dipole interaction function
 def dipole_interaction(dist):
-    return ((6 * mu_naught) / (4 * np.pi * dist ** 4)) * (magnetic_moment ** 2)
+    return (3 * mu_naught * m1 * m2) / (2 * np.pi * dist**4)
 
 # Velocity function
 def v(a):
